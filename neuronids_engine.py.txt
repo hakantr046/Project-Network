@@ -1,0 +1,41 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+from sklearn.ensemble import IsolationForest
+
+def run_analysis():
+    print("------------------------------")
+    print("PROJECT - ANALİZ MOTORU ÇALIŞIYOR")
+    print("------------------------------")
+    
+    # Veriyi oku (traffic_labeled.csv dosyasından)
+    try:
+        df = pd.read_csv('traffic_labeled.csv')
+    except FileNotFoundError:
+        print("[!] traffic_labeled.csv bulunamadı. Lütfen veri setini hazırlayın.")
+        return
+
+    # Anomali tespiti (Isolation Forest)
+    model = IsolationForest(contamination=0.05, random_state=42)
+    df['anomaly'] = model.fit_predict(df[['protocol', 'length']])
+    df['status'] = df['anomaly'].map({1: 'Normal', -1: 'Anomali'})
+
+    # Sonuçları ekrana bas
+    print(f"Analiz Edilen Paket: {len(df)}")
+    print(df['status'].value_counts())
+
+    # Görselleştirme (Senin paylaştığın grafiğin aynısını üretir)
+    plt.figure(figsize=(10, 6))
+    colors = {'Normal': 'blue', 'Anomali': 'red'}
+    plt.scatter(range(len(df)), df['length'], c=df['status'].map(colors), alpha=0.6)
+    
+    plt.title('Project - Ağ Trafiği Anomali Analizi')
+    plt.xlabel('Paket Sırası')
+    plt.ylabel('Paket Uzunluğu (Length)')
+    plt.grid(True, linestyle='--', alpha=0.7)
+    
+    # Grafiği kaydet
+    plt.savefig('project_analysis.png')
+    print("\n[+] Analiz tamamlandı! 'project_analysis.png' dosyası oluşturuldu.")
+
+if __name__ == "__main__":
+    run_analysis()

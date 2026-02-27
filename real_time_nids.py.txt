@@ -1,0 +1,51 @@
+import pandas as pd
+import subprocess
+import time
+from io import StringIO
+from sklearn.ensemble import IsolationForest
+from sklearn.preprocessing import LabelEncoder
+
+def capture_and_analyze():
+    print("\n[*] 10 saniyelik trafik yakalanıyor...")
+    
+    # tshark ile ens33 arayüzünden canlı 100 paket yakala
+    # Bu komut senin terminaldeki veri çekme sürecini simüle eder
+    cmd = [
+        'tshark', '-i', 'ens33', '-c', '100', '-T', 'fields', '-E', 'separator=,',
+        '-e', 'frame.time_epoch', '-e', 'ip.src', '-e', 'ip.dst', '-e', 'ip.proto', '-e', 'frame.len'
+    ]
+    
+    result = subprocess.run(cmd, stdout=subprocess.PIPE, text=True)
+    
+    # Yakalanan veriyi DataFrame'e dök
+    data = "time,src_ip,dst_ip,protocol,length\n" + result.stdout
+    df = pd.read_csv(StringIO(data))
+    
+    if len(df) < 5:
+        print("[!] Yeterli trafik yok, bekleniyor...")
+        return
+
+    # IP adreslerini modele uygun hale getir (Encoding)
+    le = LabelEncoder()
+    df['src_ip_enc'] = le.fit_transform(df['src_ip'].astype(str))
+    
+    # Isolation Forest Modeli - Project Core
+    # %5 contamination ile anomalileri (kırmızı noktalar) belirler
+    model = IsolationForest(contamination=0.05, random_state=42)
+    df['anomaly'] = model.fit_predict(df[['src_ip_enc', 'protocol', 'length']])
+    
+    # Anomali filtreleme ve Alarm
+    anomalies = df[df['anomaly'] == -1]
+    if not anomalies.empty:
+        print(f"!!! PROJECT ALARM: {len(anomalies)} ADET ŞÜPHELİ PAKET TESPİT EDİLDİ !!!")
+        print(anomalies[['src_ip', 'dst_ip', 'length']].head(3))
+    else:
+        print("[OK] Trafik temiz.")
+
+try:
+    print("Project Canlı İzleme Sistemi Başlatıldı... (Durdurmak için CTRL+C)")
+    while True:
+        capture_and_analyze()
+        time.sleep(2)
+except KeyboardInterrupt:
+    print("\n[!] Project sistemi güvenli şekilde kapatılıyor.")
