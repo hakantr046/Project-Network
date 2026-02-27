@@ -72,7 +72,7 @@ Sistemin canlı ağ trafiği üzerinde anlık alarm üretmesini sağlayan modül
 
 Python
 
-# [NOT: Burada real_time_nids.py kodun yer alacak]
+# NOT: Burada real_time_nids.py kodu yer alacak
 # Bu modül, tshark ile canlı paket yakalar ve anlık PROJECT ALARM üretir.
 📊 Analiz Sonuçları
 Sistem, ICMP Flood ve DoS gibi yüksek yoğunluklu trafikleri time_diff ve length özellikleri üzerinden saniyeler içinde tespit edebilmektedir.
@@ -87,3 +87,4 @@ Bash
 pip install pandas scikit-learn matplotlib
 
 sudo ./venv/bin/python real_time_nids.py
+
