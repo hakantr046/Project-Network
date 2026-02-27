@@ -85,4 +85,5 @@ Anomaliler: Beklenmedik paket boyutları ve sıklıkları (Kırmızı noktalar).
 Bash
 
 pip install pandas scikit-learn matplotlib
+
 sudo ./venv/bin/python real_time_nids.py
